@@ -743,7 +743,7 @@ output_size = 1 #Binary case
 # output_size = 3
 exp_name = "MOMENTA_OG"
 # pre_trn_ckp = "EMNLP_MCHarm_GLAREAll_COVTrain" # Uncomment for using pre-trained
-exp_path = "path_to_saved_files/EMNLP_ModelCkpt/"+exp_name
+exp_path = "EMNLP_ModelCkpt/"+exp_name
 lr=0.001
 criterion = nn.BCELoss() #Binary case
 # criterion = nn.CrossEntropyLoss()
@@ -1155,7 +1155,7 @@ def calculate_mmae(expected, predicted, classes):
 # In[ ]:
 
 
-n_epochs = 25
+n_epochs = 1
 # early stopping patience; how long to wait after last time validation loss improved.
 patience = 25
 model, train_acc_list, val_acc_list, train_loss_list, val_loss_list, epoc_num = train_model(model, patience, n_epochs)
@@ -1166,34 +1166,49 @@ model, train_acc_list, val_acc_list, train_loss_list, val_loss_list, epoc_num = 
 # In[ ]:
 
 # IPython.get_ipython().run_line_magic('matplotlib', 'inline')
-epochs = range(epoc_num+1)
-train_acc_list
-val_acc_list
-train_loss_list
-val_loss_list
-# plt.plot(epochs, train_acc_list)
-# plt.plot(epochs, val_acc_list)
-fig1, ax1 = plt.subplots()
-ax1.plot(epochs, train_acc_list, label="train acc")
-ax1.plot(epochs, val_acc_list, label="val acc")
-ax1.set_title("Accuracy Plot")
-ax1.set_xlabel("Epochs")
-ax1.legend(loc="upper left")
-acc_filename = os.path.join('results', f"accuracy_plot_{exp_name}.png")
-fig1.savefig(acc_filename)
 
-# Loss Plot
-fig2, ax2 = plt.subplots()
-ax2.plot(epochs, train_loss_list, label="train loss")
-ax2.plot(epochs, val_loss_list, label="val loss")
-ax2.set_title("Loss Plot")
-ax2.set_xlabel("Epochs")
-ax2.legend(loc="upper left")
-loss_filename = os.path.join('results', f"loss_plot_{exp_name}.png")
-fig2.savefig(loss_filename)
+def plot_curves(exp_path, train_acc_list, val_acc_list, train_loss_list, val_loss_list):
+
+    # initialize the output figure path
+    results_path = os.path.join(exp_path, 'results')
+    Path(exp_path).mkdir(parents=True, exist_ok=True)
+
+    epochs = range(epoc_num+1)
+    train_acc_list = [t.cpu() for t in train_acc_list]
+    val_acc_list = [t.cpu() for t in val_acc_list]
+    # train_loss_list = [t.cpu().numpy() for t in train_loss_list]
+    # val_loss_list = [t.cpu().numpy() for t in val_loss_list]
+    # plt.plot(epochs, train_acc_list)
+    # plt.plot(epochs, val_acc_list)
+    # print("Train ACC List: ", train_acc_list)
+    # print("\nVal acc list: ", val_acc_list, 
+    #     "\ntrain loss list: ", train_loss_list, 
+    #     "\nval loss list: ", val_loss_list)
+    fig1, ax1 = plt.subplots()
+    ax1.plot(epochs, train_acc_list, label="train acc")
+    ax1.plot(epochs, val_acc_list, label="val acc")
+    ax1.set_title("Accuracy Plot")
+    ax1.set_xlabel("Epochs")
+    ax1.legend(loc="upper left")
+    acc_filename = os.path.join(results_path, f"accuracy_plot.png")
+    fig1.savefig(acc_filename)
+
+    # Loss Plot
+    fig2, ax2 = plt.subplots()
+    ax2.plot(epochs, train_loss_list, label="train loss")
+    ax2.plot(epochs, val_loss_list, label="val loss")
+    ax2.set_title("Loss Plot")
+    ax2.set_xlabel("Epochs")
+    ax2.legend(loc="upper left")
+    loss_filename = os.path.join(results_path, f"loss_plot.png")
+    fig2.savefig(loss_filename)
+
+plot_curves(exp_path, train_acc_list, val_acc_list, train_loss_list, val_loss_list)
+
 # Evaluate on test-set
 
 # In[ ]:
+
 
 
 outputs = test_model(model)
@@ -1241,7 +1256,7 @@ prec = np.round(precision_score(test_labels, y_pred, average="macro"),4)
 f1 = np.round(f1_score(test_labels, y_pred, average="macro"),4)
 # hl = np.round(hamming_loss(test_labels, y_pred),4)
 acc = np.round(accuracy_score(test_labels, y_pred),4)
-mmae = np.round(calculate_mmae(test_labels, y_pred, [0,1,2]),4)
+mmae = np.round(calculate_mmae(test_labels, y_pred, [0,1]),4)
 mae = np.round(mean_absolute_error(test_labels, y_pred),4)
 # print("recall_score\t: ",rec)
 # print("precision_score\t: ",prec)
