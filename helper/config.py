@@ -10,6 +10,6 @@ config = {
     "output_size": 1,
     "lr": 0.001,
     "batch_size": 64,
-    "n_epochs": 1,
+    "n_epochs": 2,
     "patience": 25,
 }
