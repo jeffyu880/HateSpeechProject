@@ -1,0 +1,59 @@
+DEPENDENCIES:
+If you want to download a new image from scratch:
+
+
+Add these to the requirements.txt file:
+
+yacs
+torchmetrics
+pytorch_lightning
+transformers
+git+https://github.com/openai/CLIP.git
+
+Then downloadn the new image as explained in the course tutorial. 
+
+OR 
+
+use the following steps to append the dependencies to your existing image [this is what I did]:
+
+Open Docker Desktop 
+Open a terminal (In my case I used windows powershell)
+Run the following commands:
+
+1- Start a container from your existing image:
+
+docker run -it --name memeclip-dev registry.rcp.epfl.ch/ee-559-mmouawad/my-toolbox:v0.2 bash
+
+2- Inside the container install the dependencies:
+pip install yacs torchmetrics pytorch_lightning transformers 
+pip install git+https://github.com/openai/CLIP.git
+
+Commit the container to save the changes:
+docker commit memeclip-dev registry.rcp.epfl.ch/ee-559-mmouawad/my-toolbox:v0.2-clip
+
+Push the new image to the registry:
+
+docker push registry.rcp.epfl.ch/ee-559-mmouawad/my-toolbox:v0.2-clip
+
+FINALLY:
+
+For training set: 
+
+cfg.test_only = False [LINE 16]
+cfg.reproduce = False [LINE 43]
+
+and make sure to save a copy of model.ckpt as the training will overwrite it.
+For testing set:
+
+cfg.test_only = True [LINE 16]
+cfg.reproduce = True [LINE 43]
+
+Also in case your are running this on your desktop with a CPU: 
+
+Change line 49 in main.py to:
+
+trainer = Trainer(accelerator='cpu', devices=1, max_epochs=cfg.max_epochs, callbacks=[checkpoint_callback], deterministic=False)
+
+Otherwise, you can run it on the GPU with:
+
+trainer = Trainer(accelerator='gpu', devices=cfg.gpus, max_epochs=cfg.max_epochs, callbacks=[checkpoint_callback], deterministic=False)
