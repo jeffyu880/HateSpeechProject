@@ -47,7 +47,7 @@ docker commit memeclip-dev registry.rcp.epfl.ch/ee-559-mmouawad/my-toolbox:v0.2-
 docker push registry.rcp.epfl.ch/ee-559-mmouawad/my-toolbox:v0.2-clip
 ```
 
-🧪 Running the Code
+### 🧪 Running the Code
 ▶️ For Training:
 In configs.py, set the following:
 ```bash
