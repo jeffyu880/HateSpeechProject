@@ -220,8 +220,8 @@ def train_model(model, patience, n_epochs, use_wandb=True):
         for batch_idx, data in enumerate(dataloader_train):
             print(f"Epoch: {i}, Batch: {batch_idx + 1}/{num_batches}")
 #             Clip features...
-            img_inp_clip = data['image_clip_input']
-            txt_inp_clip = data['text_clip_input']
+            img_inp_clip = data['image_clip_input']     # the image
+            txt_inp_clip = data['text_clip_input']      
             with torch.no_grad():
                 img_feat_clip = clip_model.encode_image(img_inp_clip).float().to(device)
                 txt_feat_clip = clip_model.encode_text(txt_inp_clip).float().to(device)
@@ -363,67 +363,78 @@ def test_model(model, criterion):
 # print(model)
 # optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
 
-######################################## Start training ##################################
-output_size = 1 # Binary case
-# output_size = 3
-exp_name = config["exp_name"] # experiment name for every run 
-# pre_trn_ckp = "EMNLP_MCHarm_GLAREAll_COVTrain" # Uncomment for using pre-trained
-exp_path = config["exp_path"]  # path where weights and plots are saved
-# initialize the experiment path
-Path(exp_path).mkdir(parents=True, exist_ok=True)
-lr=config["lr"]
+######################################## TRAINING ########################################
 criterion = nn.BCELoss() # Binary case
-# criterion = nn.CrossEntropyLoss()
-# # ------------Fresh training------------
-model = MM(output_size)
-model.to(device)
-print(model)
-optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
-n_epochs = config["n_epochs"]
-# early stopping patience; how long to wait after last time validation loss improved.
-patience = config["patience"]
+output_size = 1 # Binary case
 
-model, train_acc_list, val_acc_list, train_loss_list, val_loss_list, epoc_num = train_model(model, patience, n_epochs, optimizer)
-############################################## Plot the training and validation curves ##########################################
+if config['train']:
+    # output_size = 3
+    exp_name = config["exp_name"] # experiment name for every run 
+    # pre_trn_ckp = "EMNLP_MCHarm_GLAREAll_COVTrain" # Uncomment for using pre-trained
+    exp_path = config["exp_path"]  # path where weights and plots are saved
+    # initialize the experiment path
+    Path(exp_path).mkdir(parents=True, exist_ok=True)
+    lr=config["lr"]
+    # criterion = nn.CrossEntropyLoss()
+    # # ------------Fresh training------------
+    model = MM(output_size)
+    model.to(device)
+    print(model)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+    n_epochs = config["n_epochs"]
+    # early stopping patience; how long to wait after last time validation loss improved.
+    patience = config["patience"]
 
-results_path = os.path.join(exp_path, 'results')
-Path(results_path).mkdir(parents=True, exist_ok=True)
-plot_curves(train_acc_list, val_acc_list, train_loss_list, val_loss_list, results_path)
+    model, train_acc_list, val_acc_list, train_loss_list, val_loss_list, epoc_num = train_model(model, patience, n_epochs, optimizer)
+    ### Plot the training and validation curves ###
 
-# Evaluate on test-set
-outputs = test_model(model, criterion)
+    results_path = os.path.join(exp_path, 'results')
+    Path(results_path).mkdir(parents=True, exist_ok=True)
+    plot_curves(train_acc_list, val_acc_list, train_loss_list, val_loss_list, results_path)
 
-# # Binary setting
-np_out = np.array(outputs)
-y_pred = np.zeros(np_out.shape)
-y_pred[np_out>0.5]=1
-y_pred = np.array(y_pred)
+######################################## TESTING ########################################
 
-# # Binary setting
-test_labels=[]
-# for index, row in test_samples_frame.iterrows():
-for index, row in test_samples_frame.iterrows():
-    lab = row['labels'][0]
-    if lab=="not harmful":
-        test_labels.append(0)    
-    else:
-        test_labels.append(1)
+# If loading model from weights:
+else:
+    if config['load_weights']:
+        model = MM(output_size)
+        model.load_state_dict(torch.load(config['weights_path']))
+        model.to(device)
 
-rec = np.round(recall_score(test_labels, y_pred, average="macro"),4)
-prec = np.round(precision_score(test_labels, y_pred, average="macro"),4)
-f1 = np.round(f1_score(test_labels, y_pred, average="macro"),4)
-# hl = np.round(hamming_loss(test_labels, y_pred),4)
-acc = np.round(accuracy_score(test_labels, y_pred),4)
-mmae = np.round(calculate_mmae(test_labels, y_pred, [0,1]),4)
-mae = np.round(mean_absolute_error(test_labels, y_pred),4)
-# print("recall_score\t: ",rec)
-# print("precision_score\t: ",prec)
-# print("f1_score\t: ",f1)
-# print("hamming_loss\t: ",hl)
-# print("accuracy_score\t: ",f1)
-print(classification_report(test_labels, y_pred))
-print("Acc, F1, Rec, Prec, MAE, MMAE")
-print(acc, f1, rec, prec, mae, mmae)
+        # Evaluate on test-set
+        outputs = test_model(model, criterion)
+
+        # # Binary setting
+        np_out = np.array(outputs)
+        y_pred = np.zeros(np_out.shape)
+        y_pred[np_out>0.5]=1
+        y_pred = np.array(y_pred)
+
+        # # Binary setting
+        test_labels=[]
+        # for index, row in test_samples_frame.iterrows():
+        for index, row in test_samples_frame.iterrows():
+            lab = row['labels'][0]
+            if lab=="not harmful":
+                test_labels.append(0)    
+            else:
+                test_labels.append(1)
+
+        rec = np.round(recall_score(test_labels, y_pred, average="macro"),4)
+        prec = np.round(precision_score(test_labels, y_pred, average="macro"),4)
+        f1 = np.round(f1_score(test_labels, y_pred, average="macro"),4)
+        # hl = np.round(hamming_loss(test_labels, y_pred),4)
+        acc = np.round(accuracy_score(test_labels, y_pred),4)
+        mmae = np.round(calculate_mmae(test_labels, y_pred, [0,1]),4)
+        mae = np.round(mean_absolute_error(test_labels, y_pred),4)
+        # print("recall_score\t: ",rec)
+        # print("precision_score\t: ",prec)
+        # print("f1_score\t: ",f1)
+        # print("hamming_loss\t: ",hl)
+        # print("accuracy_score\t: ",f1)
+        print(classification_report(test_labels, y_pred))
+        print("Acc, F1, Rec, Prec, MAE, MMAE")
+        print(acc, f1, rec, prec, mae, mmae)
 
 
 

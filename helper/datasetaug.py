@@ -194,53 +194,55 @@ class HarmemeMemesDatasetAug2(torch.utils.data.Dataset):
         image_clip_input = self.process_image_clip(self.samples_frame.loc[idx, "image"])
 # --------------------------------------------------------------------------------------        
 #         Pre-extracted features
-        # image_vgg_feature = self.ROI_samples[idx]        
+        # FROM SAVED FILE
+        image_vgg_feature = self.ROI_samples[idx]        
 # --------------------------------------------------------------------------------------
-# On-demand computation
-        BB_info = self.samples_frame.loc[idx, "bbdict"]
-        roi_vgg_feat_list = []
-        if BB_info:
-            total_BB = len(BB_info)
-            if total_BB>4:
-                BB_info_final = BB_info[:4]
-            else:
-                BB_info_final = BB_info
-#             Have to get VGG reps for each cropped BB and get the mean             
-            for item in BB_info_final:
-#                 Get the top left (left,top) and bottom right (right,bottom) values of the coordinates
-#                 top left and bottom right value extraction                
-                left   = item['Vertices'][3][0]
-                top    = item['Vertices'][3][1]
-                right  = item['Vertices'][1][0]
-                bottom = item['Vertices'][1][1]
-                get_image_vgg_center(img_file_name)
-                roi_vgg_feat = get_image_vgg_BB(left, top, right, bottom, img_file_name)
-                roi_vgg_feat_list.append(roi_vgg_feat)
-#             print(np.shape(roi_vgg_feat_list))
-#             print(torch.cat(roi_vgg_feat_list, dim=0))
-#             print(np.mean(np.array(roi_vgg_feat_list), axis=0))
-            image_vgg_feature = torch.mean(torch.vstack(roi_vgg_feat_list), axis=0)
-#             print(image_vgg_feature.shape)
-        else:
-            image_vgg_feature = torch.tensor(get_image_vgg_center(img_file_name))
+# # On-demand computation
+#         BB_info = self.samples_frame.loc[idx, "bbdict"]
+#         roi_vgg_feat_list = []
+#         if BB_info:
+#             total_BB = len(BB_info)
+#             if total_BB>4:
+#                 BB_info_final = BB_info[:4]
+#             else:
+#                 BB_info_final = BB_info
+# #             Have to get VGG reps for each cropped BB and get the mean             
+#             for item in BB_info_final:
+# #                 Get the top left (left,top) and bottom right (right,bottom) values of the coordinates
+# #                 top left and bottom right value extraction                
+#                 left   = item['Vertices'][3][0]
+#                 top    = item['Vertices'][3][1]
+#                 right  = item['Vertices'][1][0]
+#                 bottom = item['Vertices'][1][1]
+#                 get_image_vgg_center(img_file_name)
+#                 roi_vgg_feat = get_image_vgg_BB(left, top, right, bottom, img_file_name)
+#                 roi_vgg_feat_list.append(roi_vgg_feat)
+# #             print(np.shape(roi_vgg_feat_list))
+# #             print(torch.cat(roi_vgg_feat_list, dim=0))
+# #             print(np.mean(np.array(roi_vgg_feat_list), axis=0))
+#             image_vgg_feature = torch.mean(torch.vstack(roi_vgg_feat_list), axis=0)
+# #             print(image_vgg_feature.shape)
+#         else:
+#             image_vgg_feature = torch.tensor(get_image_vgg_center(img_file_name))
 # --------------------------------------------------------------------------------------
+        # FROM SAVED FILE
         text_clip_input = self.process_text_clip(self.samples_frame.loc[idx, "text"])
 #         -------------------------------------------------------------------------------
 #         Process entities
-        #         Use them directly from the saved files
-        # text_drob_feature = self.ENT_samples[idx]
+#        # FROM SAVED FILE
+        text_drob_feature = self.ENT_samples[idx]
 #         -------------------------------------------------------------------------------
 #         Get the mean representation for the set of entities ""on-demand
-        cur_ent_rep_list = []
-        cur_ent_list = self.samples_frame.loc[idx, "ent"]
+        # cur_ent_rep_list = []
+        # cur_ent_list = self.samples_frame.loc[idx, "ent"]
         
-        if len(cur_ent_list):
-            for item in cur_ent_list:
-                cur_ent_rep = torch.tensor(model_sent_trans.encode(item)).to(device)
-                cur_ent_rep_list.append(cur_ent_rep)
-            text_drob_feature = torch.mean(torch.vstack(cur_ent_rep_list), axis=0)
-        else:
-            text_drob_feature = torch.tensor(model_sent_trans.encode(self.samples_frame.loc[idx, "text"])).to(device)
+        # if len(cur_ent_list):
+        #     for item in cur_ent_list:
+        #         cur_ent_rep = torch.tensor(model_sent_trans.encode(item)).to(device)
+        #         cur_ent_rep_list.append(cur_ent_rep)
+        #     text_drob_feature = torch.mean(torch.vstack(cur_ent_rep_list), axis=0)
+        # else:
+        #     text_drob_feature = torch.tensor(model_sent_trans.encode(self.samples_frame.loc[idx, "text"])).to(device)
 #         -------------------------------------------------------------------------------
 
         if "labels" in self.samples_frame.columns:

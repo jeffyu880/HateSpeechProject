@@ -81,7 +81,7 @@ class MM(nn.Module):
 
     def forward(self, in_CI, in_VGG, in_CT, in_Drob):        
         VGG_feat = self.drop20(F.relu(self.dense_vgg_512(self.drop20(F.relu(self.dense_vgg_1024(in_VGG))))))
-        Drob_feat = self.drop5(F.relu(self.dense_drob_512(in_Drob)))
+        Drob_feat = self.drop5(F.relu(self.dense_drob_512(in_Drob))) # distilled text?
         out_img = self.selfattNFuse_L1a(VGG_feat, in_CI)
         out_txt = self.selfattNFuse_L1b(Drob_feat, in_CT)        
         out_img_txt = self.selfattNFuse_L2(out_img, out_txt)
