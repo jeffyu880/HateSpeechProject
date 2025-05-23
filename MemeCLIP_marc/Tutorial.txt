@@ -1,3 +1,7 @@
+Before following this tutorial 
+check the original MemeCLIP README which is inside MemeCLIP_marc.
+
+
 DEPENDENCIES:
 If you want to download a new image from scratch:
 
@@ -57,3 +61,14 @@ trainer = Trainer(accelerator='cpu', devices=1, max_epochs=cfg.max_epochs, callb
 Otherwise, you can run it on the GPU with:
 
 trainer = Trainer(accelerator='gpu', devices=cfg.gpus, max_epochs=cfg.max_epochs, callbacks=[checkpoint_callback], deterministic=False)
+
+Moreover:
+
+You can download the dataset and store it inside MemeCLIP_marc 
+The link: 
+
+Create a directory inside the code folder called: checkpoints
+Inside this directory you can put the model checkpoint from the original MemeCLIP repo, name it model.ckpt
+
+The link: 
+
