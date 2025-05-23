@@ -2,9 +2,9 @@ import os
 from yacs.config import CfgNode 
 
 cfg = CfgNode()
-cfg.root_dir = ''
-cfg.img_folder = ''
-cfg.info_file = ''
+cfg.root_dir = '/pvc/home/MemeCLIP/code' #'/pvc/home/MemeCLIP/code'
+cfg.img_folder = '/pvc/home/MemeCLIP/PrideMM/Images' #'/pvc/home/MemeCLIP/PrideMM/Images'
+cfg.info_file = '/pvc/home/MemeCLIP/PrideMM/PrideMM.csv' #'/pvc/home/MemeCLIP/PrideMM/PrideMM.csv'
 cfg.checkpoint_path = os.path.join(cfg.root_dir, 'checkpoints')
 cfg.checkpoint_file = os.path.join(cfg.checkpoint_path,'model.ckpt')
 
@@ -34,9 +34,10 @@ cfg.map_dim = 1024
 cfg.num_pre_output_layers = 1
 cfg.drop_probs = [0.1, 0.4, 0.2]
 cfg.lr = 1e-4
-cfg.max_epochs = 10
+cfg.max_epochs = 30
 cfg.ratio = 0.2
 cfg.weight_decay = 1e-4
 cfg.num_classes = len(cfg.class_names)
-cfg.scale = 30 
+cfg.scale = 5 
 cfg.print_model = True
+cfg.reproduce = False

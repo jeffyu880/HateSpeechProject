@@ -64,8 +64,8 @@ class Custom_Dataset(Dataset):
 class Custom_Collator(object):
     def __init__(self, cfg):
         self.cfg = cfg
-        self.clip_model, _ = clip.load(self.cfg.clip_variant, device="cuda", jit=False)
-        _, self.clip_preprocess = clip.load(self.cfg.clip_variant, device="cuda", jit=False)
+        self.clip_model, _ = clip.load(self.cfg.clip_variant, device=cfg.device, jit=False)
+        _, self.clip_preprocess = clip.load(self.cfg.clip_variant, device=cfg.device, jit=False)
         self.clip_model.float().eval()
 
     def __call__(self, batch):
@@ -73,7 +73,9 @@ class Custom_Collator(object):
         idx_memes = [item['idx_meme'] for item in batch]
 
         batch_new = {'labels': labels,
-                     'idx_memes': idx_memes,
+                    'idx_memes': idx_memes,
+                    'raw_images': [item['image'] for item in batch],
+                    'raw_texts': [item['text'] for item in batch],
                      }
         
         image_embed_list = []
